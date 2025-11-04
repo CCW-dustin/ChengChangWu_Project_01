@@ -1,0 +1,51 @@
+---
+title: "Lead IQ data"
+author: "Cheng-Chang"
+date: "2025-11-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# clean environment
+rm(list = ls())
+
+# load packages
+library(dplyr)
+library(gtsummary)
+library(ggplot2)
+library(here)
+
+# set knitr options
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r load data}
+lead <- read.csv(here("DataRaw", "lead-iq-01.csv"))
+```
+
+#### IQ levels by location status
+```{r plot, fig.align='center'}
+ggplot(lead, aes(x = Smelter, y = IQ, fill = Smelter)) +
+  geom_boxplot(alpha = 0.7, width = 0.6, color = "black") +
+  labs(title = "IQ Scores by Proximity to Lead Smelter",
+       x = "Proximity to Smelter",  y = "IQ Score") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+#### Summary Statistics
+```{r stat, echo = T}
+# Summarize IQ by Smelter group
+stat <- lead %>%
+  tbl_summary(by = Smelter, # Near vs Far
+              type = all_continuous() ~ "continuous2",
+              statistic = all_continuous() ~ c("{mean} ({sd})", "{min}, {max}"),
+              digits = all_continuous() ~ 1,
+              label = IQ ~ "IQ Score") %>%
+  add_overall(last = T) %>% # adds sample size column
+  modify_header(label ~ "**Variable**") %>%
+  modify_caption("**Table 1. Summary of IQ by Smelter Proximity**")
+stat
+```
+
+Based on the preliminary analysis, the mean IQ of all children in the dataset is `r round(mean(lead$IQ, na.rm = TRUE), 1)`, with the Far group having a mean of `r round(mean(lead[lead$Smelter == "Far", 2], na.rm = TRUE), 1)` and the Near group a mean of `r round(mean(lead[lead$Smelter == "Near", 2], na.rm = TRUE), 1)`. As seen in the plot and table, there may be a data issue: the Far group contains a value of 999, while the range of all other values is between 46 and 115.
