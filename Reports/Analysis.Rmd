@@ -23,6 +23,11 @@ knitr::opts_chunk$set(echo = FALSE)
 lead <- read.csv(here("DataRaw", "lead-iq-01.csv"))
 ```
 
+```{r update}
+# data issue 999->99
+lead$IQ = ifelse(lead$IQ == 999, 99, lead$IQ)
+```
+
 #### IQ levels by location status
 ```{r plot, fig.align='center'}
 ggplot(lead, aes(x = Smelter, y = IQ, fill = Smelter)) +
